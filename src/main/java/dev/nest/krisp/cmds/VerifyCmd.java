@@ -1,7 +1,7 @@
 package dev.nest.krisp.cmds;
 
 import dev.nest.krisp.Krisp;
-import dev.nest.krisp.objects.VerificationData;
+import dev.nest.krisp.objects.DataStorage;
 import dev.nest.krisp.utils.Utils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.lang.math.NumberUtils;
 
 import java.awt.*;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 
 public class VerifyCmd extends ListenerAdapter {
@@ -21,7 +22,7 @@ public class VerifyCmd extends ListenerAdapter {
 
         String message = event.getMessage().getContentRaw();
         EmbedBuilder builder = new EmbedBuilder();
-        VerificationData data = Krisp.getVerifDataManager().getData(event.getGuild().getId());
+        DataStorage data = Krisp.getDataManager().getData(event.getGuild().getId());
 
         if (map.containsKey(event.getAuthor().getId())) {
             if ((System.currentTimeMillis() - map.get(event.getAuthor().getId())) > 180000) {
@@ -34,9 +35,19 @@ public class VerifyCmd extends ListenerAdapter {
                 builder.clear();
                 event.getMessage().delete().queue();
             } else {
-                data.setMessage(message);
+                try {
+                    data.setRules_message(message);
+                } catch (IllegalArgumentException e) {
+                    builder.setTitle("❌ Error");
+                    builder.setDescription("Message cannot be longer than 1024 characters! You are now at " + message.length() + " characters!");
+                    builder.setColor(Color.RED);
+                    event.getChannel().sendTyping().queue();
+                    event.getChannel().sendMessage(builder.build()).queue();
+                    builder.clear();
+                    event.getMessage().delete().queue();
+                }
                 builder.setTitle("✅ Success");
-                builder.setDescription("Message is now set to:\n" + data.getMessage());
+                builder.setDescription("Message is now set to:\n" + data.getRules_message());
                 builder.setColor(Color.GREEN);
                 event.getChannel().sendTyping().queue();
                 event.getChannel().sendMessage(builder.build()).queue();
@@ -52,64 +63,64 @@ public class VerifyCmd extends ListenerAdapter {
             if (args[0].equalsIgnoreCase("verify")) {
                 switch (args.length) {
                     case 1:
-                        if (data.hasImage()) {
-                            builder.setThumbnail(data.getImageURL());
+                        if (data.hasRulesImage()) {
+                            builder.setThumbnail(data.getVerif_imageURL());
                         }
                         builder.setTitle("Krisp Verification Setup");
                         builder.setDescription("Commands to setup the verification system!");
-                        if (data.isComplete()) {
+                        if (data.isVerifComplete()) {
                             builder.addField("Status", "✅ I have enough information to be toggled!", false);
                         } else {
                             builder.addField("Status", "❌ I do not have enough information to be toggled!", false);
                         }
-                        if (data.isEnabled()) {
+                        if (data.getVerifEnabled()) {
                             builder.addField("Enabled", "✅\nverify toggle", false);
                         } else {
                             builder.addField("Enabled", "❌\nverify toggle", false);
                         }
-                        if (data.getChannel() != null) {
-                            builder.addField("Channel", data.getChannel().getAsMention() + "\nverify setchannel <channelId>", false);
+                        if (data.getVerifChannel() != null) {
+                            builder.addField("Channel", data.getVerifChannel().getAsMention() + "\nverify setchannel <channelId>", false);
                         } else {
                             builder.addField("Channel", "❌\nverify setchannel <channelId>", false);
                         }
-                        if (data.getMessage() != null) {
-                            if (!data.getMessage().equalsIgnoreCase("null")) {
-                                builder.addField("Message",  "✅\nverify setmessage", false);
+                        if (data.getRules_message() != null) {
+                            if (!data.getRules_message().equalsIgnoreCase("null")) {
+                                builder.addField("Message",  "✅\nverify setRules_message", false);
                             } else {
-                                builder.addField("Message", "❌\nverify setmessage", false);
+                                builder.addField("Message", "❌\nverify setRules_message", false);
                             }
                         } else {
-                            builder.addField("Message", "❌\nverify setmessage", false);
+                            builder.addField("Message", "❌\nverify setRules_message", false);
                         }
-                        if (data.getReactionUnicode() != null) {
-                            if (!data.getReactionUnicode().equalsIgnoreCase("null")) {
-                                builder.addField("Reaction", data.getReactionUnicode() + "\nverify setreaction <reactionId>", false);
+                        if (data.getVerif_reactionUnicode() != null) {
+                            if (!data.getVerif_reactionUnicode().equalsIgnoreCase("null")) {
+                                builder.addField("Reaction", data.getVerif_reactionUnicode() + "\nverify setreaction <reactionId>", false);
                             } else {
                                 builder.addField("Reaction", "❌\nverify setreaction <reactionId>", false);
                             }
                         } else {
                             builder.addField("Reaction", "❌\nverify setreaction <reactionId>", false);
                         }
-                        if (data.getImageURL() != null) {
-                            if (!data.getImageURL().equalsIgnoreCase("null")) {
-                                builder.addField("Image", data.getImageURL(), false);
+                        if (data.getVerif_imageURL() != null) {
+                            if (!data.getVerif_imageURL().equalsIgnoreCase("null")) {
+                                builder.addField("Image", data.getVerif_imageURL(), false);
                             } else {
                                 builder.addField("Image", "❌\nverify setimage <url>", false);
                             }
                         } else {
                             builder.addField("Image", "❌\nverify setimage <url>", false);
                         }
-                        if (data.getMessageId() != null) {
-                            if (!data.getMessageId().equalsIgnoreCase("null")) {
-                                builder.addField("Message ID", data.getMessageId(), false);
+                        if (data.getRules_messageId() != null) {
+                            if (!data.getRules_messageId().equalsIgnoreCase("null")) {
+                                builder.addField("Message ID", data.getRules_messageId(), false);
                             } else {
                                 builder.addField("Message ID", "❌", false);
                             }
                         } else {
                             builder.addField("Message ID", "❌", false);
                         }
-                        if (data.getRole() != null) {
-                            builder.addField("Role ", data.getRole().getAsMention() + "\nverify setrole <roleid>", false);
+                        if (data.getVerifRole() != null) {
+                            builder.addField("Role ", data.getVerifRole().getAsMention() + "\nverify setrole <roleid>", false);
                         } else {
                             builder.addField("Role", "❌\nverify setrole <roleid>", false);
                         }
@@ -122,11 +133,11 @@ public class VerifyCmd extends ListenerAdapter {
                         break;
                     case 2:
                         if (args[1].equalsIgnoreCase("toggle")) {
-                            if (data.isEnabled()) {
+                            if (data.getVerifEnabled()) {
                                 //TODO - EXCEPTION HANDLE
-                                data.getChannel().retrieveMessageById(data.getMessageId()).queue(m -> m.delete().queue());
-                                data.setMessageId(null);
-                                data.setEnabled(false);
+                                data.getVerifChannel().retrieveMessageById(data.getRules_messageId()).queue(m -> m.delete().queue());
+                                data.setRules_messageId(null);
+                                data.setVerifEnabled(false);
                                 builder.setTitle("✅ Success");
                                 builder.setDescription("Krisp Verification System is now disabled!");
                                 builder.setColor(Color.RED);
@@ -135,24 +146,24 @@ public class VerifyCmd extends ListenerAdapter {
                                 event.getMessage().delete().queue();
                                 builder.clear();
                             } else {
-                                if (data.isComplete()) {
-                                    if (data.getChannel() != null) {
+                                if (data.isVerifComplete()) {
+                                    if (data.getVerifChannel() != null) {
                                         builder.setTitle("Krisp Verification System");
-                                        if (data.getImageURL() != null) {
-                                            if (!data.getImageURL().equalsIgnoreCase("null")) {
-                                                builder.setImage(data.getImageURL());
+                                        if (data.getVerif_imageURL() != null) {
+                                            if (!data.getVerif_imageURL().equalsIgnoreCase("null")) {
+                                                builder.setImage(data.getVerif_imageURL());
                                             }
                                         }
                                         builder.setColor(Color.magenta);
-                                        builder.setDescription(data.getMessage());
+                                        builder.setDescription(data.getRules_message());
                                         builder.setFooter("Bot developed by Nestirium");
-                                        data.getChannel().sendTyping().queue();
-                                        data.getChannel().sendMessage(builder.build()).queue((m) -> {
-                                            m.addReaction(data.getReactionUnicode()).queue();
-                                            data.setMessageId(m.getId());
+                                        data.getVerifChannel().sendTyping().queue();
+                                        data.getVerifChannel().sendMessage(builder.build()).queue((m) -> {
+                                            m.addReaction(data.getVerif_reactionUnicode()).queue();
+                                            data.setRules_messageId(m.getId());
                                         });
                                         builder.clear();
-                                        data.setEnabled(true);
+                                        data.setVerifEnabled(true);
                                         builder.setTitle("✅ Success");
                                         builder.setDescription("Krisp Verification System is now enabled!");
                                         builder.setColor(Color.GREEN);
@@ -173,19 +184,21 @@ public class VerifyCmd extends ListenerAdapter {
                             }
                         }
                         if (args[1].equalsIgnoreCase("reset")) {
-                            data.setEnabled(false);
-                            data.setMessage(null);
-                            data.setImageURL(null);
-                            data.setRoleId(null);
-                            data.setReactionUnicode(null);
-                            if (data.hasMessage()) {
-                                if (data.getChannel() != null) {
+                            data.setVerifEnabled(false);
+                            data.setRules_message(null);
+                            try {
+                                data.setVerif_imageURL(null);
+                            } catch (MalformedURLException ignored) {}
+                            data.setVerif_roleId(null);
+                            data.setVerif_reactionUnicode(null);
+                            if (data.hasVerifMessage()) {
+                                if (data.getVerifChannel() != null) {
                                     //TODO - EXCEPTION HANDLE
-                                    data.getChannel().retrieveMessageById(data.getMessageId()).queue(m -> m.delete().queue());
+                                    data.getVerifChannel().retrieveMessageById(data.getRules_messageId()).queue(m -> m.delete().queue());
                                 }
                             }
-                            data.setMessageId(null);
-                            data.setChannelId(null);
+                            data.setRules_messageId(null);
+                            data.setVerif_channelId(null);
                             builder.setTitle("✅ Success");
                             builder.setDescription("Krisp Verification System is successfully reset!");
                             builder.setColor(Color.GREEN);
@@ -212,7 +225,7 @@ public class VerifyCmd extends ListenerAdapter {
                             builder.clear();
                             event.getMessage().delete().queue();
                         }
-                        if (args[1].equalsIgnoreCase("setmessage")) {
+                        if (args[1].equalsIgnoreCase("setRules_message")) {
                             map.put(event.getAuthor().getId(), System.currentTimeMillis());
                             builder.setTitle("ℹ️ Info");
                             builder.setDescription("Please specify the message you want to set within 3 minutes!");
@@ -243,17 +256,17 @@ public class VerifyCmd extends ListenerAdapter {
                         break;
                     case 3:
                         if (args[1].equalsIgnoreCase("setimage")) {
-                            if (Utils.isURL(args[2])) {
-                                data.setImageURL(args[2]);
+                            try {
+                                data.setVerif_imageURL(args[2]);
                                 builder.setTitle("✅ Success");
                                 builder.setDescription("Image is now set!");
-                                builder.setImage(data.getImageURL());
+                                builder.setImage(data.getVerif_imageURL());
                                 builder.setColor(Color.GREEN);
                                 event.getChannel().sendTyping().queue();
                                 event.getChannel().sendMessage(builder.build()).queue();
                                 builder.clear();
                                 event.getMessage().delete().queue();
-                            } else {
+                            } catch (MalformedURLException e) {
                                 builder.setTitle("❌ Error");
                                 builder.setDescription("Invalid URL specified!");
                                 builder.setColor(Color.RED);
@@ -266,7 +279,7 @@ public class VerifyCmd extends ListenerAdapter {
                             if (NumberUtils.isNumber(args[2])) {
                                 TextChannel channel = Krisp.getJDA().getTextChannelById(args[2]);
                                 if (channel != null) {
-                                    data.setChannelId(channel.getId());
+                                    data.setVerif_channelId(channel.getId());
                                     builder.setTitle("✅ Success");
                                     builder.setDescription("Channel is now set to " + channel.getAsMention());
                                     builder.setColor(Color.GREEN);
@@ -297,7 +310,7 @@ public class VerifyCmd extends ListenerAdapter {
                                 event.getMessage().delete().queue();
                                 return;
                             }
-                            data.setReactionUnicode(Utils.checkReactionLength(args[2]));
+                            data.setVerif_reactionUnicode(Utils.checkReactionLength(args[2]));
                             builder.setTitle("✅ Success");
                             builder.setDescription("Reaction is now set to " + args[2]);
                             builder.setColor(Color.GREEN);
@@ -310,7 +323,7 @@ public class VerifyCmd extends ListenerAdapter {
                             if (NumberUtils.isNumber(args[2])) {
                                 Role role = Krisp.getJDA().getRoleById(args[2]);
                                 if (role != null) {
-                                    data.setRoleId(role.getId());
+                                    data.setVerif_roleId(role.getId());
                                     builder.setTitle("✅ Success");
                                     builder.setDescription("Role is now set to " + role.getAsMention());
                                     builder.setColor(Color.GREEN);

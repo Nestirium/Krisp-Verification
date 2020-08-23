@@ -8,10 +8,8 @@ public class GuildLeaveListener extends ListenerAdapter {
 
     @Override
     public void onGuildLeave(GuildLeaveEvent event) {
-        Krisp.getVerifDataManager().removeData(event.getGuild().getId());
-        Krisp.getRuleDataManager().removeData(event.getGuild().getId());
-        Krisp.getGenericDataManager().removeData(event.getGuild().getId());
-        Krisp.getFileManager().deleteGuildData(event.getGuild().getId());
+        Krisp.getDataManager().removeData(event.getGuild().getId());
+        Krisp.getHandler().deleteData(event.getGuild().getId());
     }
 
 }

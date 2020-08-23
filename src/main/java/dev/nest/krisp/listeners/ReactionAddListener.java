@@ -1,8 +1,7 @@
 package dev.nest.krisp.listeners;
 
 import dev.nest.krisp.Krisp;
-import dev.nest.krisp.objects.RulesData;
-import dev.nest.krisp.objects.VerificationData;
+import dev.nest.krisp.objects.DataStorage;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -15,18 +14,17 @@ public class ReactionAddListener extends ListenerAdapter {
 
     @Override
     public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
-        VerificationData data = Krisp.getVerifDataManager().getData(event.getGuild().getId());
-        RulesData rulesData = Krisp.getRuleDataManager().getData(event.getGuild().getId());
-        if (data.isEnabled()) {
-            if (data.getChannel() != null) {
+        DataStorage data = Krisp.getDataManager().getData(event.getGuild().getId());
+        if (data.getVerifEnabled()) {
+            if (data.getVerifChannel() != null) {
                 event.retrieveMember().queue((m) -> {
                     if (!m.getUser().isBot()) {
-                        if (data.getChannel().getId().equalsIgnoreCase(event.getChannel().getId())) {
-                            if (event.getMessageId().equalsIgnoreCase(data.getMessageId())) {
-                                if (event.getReactionEmote().getName().equalsIgnoreCase(data.getReactionUnicode())) {
-                                    if (data.getRole() != null) {
-                                        if (!hasRole(m, data.getRole())) {
-                                            event.getGuild().addRoleToMember(m, data.getRole()).queue();
+                        if (data.getVerifChannel().getId().equalsIgnoreCase(event.getChannel().getId())) {
+                            if (event.getMessageId().equalsIgnoreCase(data.getVerif_messageId())) {
+                                if (event.getReactionEmote().getName().equalsIgnoreCase(data.getVerif_reactionUnicode())) {
+                                    if (data.getVerifRole() != null) {
+                                        if (!hasRole(m, data.getVerifRole())) {
+                                            event.getGuild().addRoleToMember(m, data.getVerifRole()).queue();
                                         }
                                         event.getReaction().removeReaction(m.getUser()).queue();
                                     }
@@ -37,16 +35,16 @@ public class ReactionAddListener extends ListenerAdapter {
                 });
             }
         }
-        if (rulesData.isEnabled()) {
-            if (rulesData.getChannel() != null) {
+        if (data.getRulesEnabled()) {
+            if (data.getRulesChannel() != null) {
                 event.retrieveMember().queue((m) -> {
                     if (!m.getUser().isBot()) {
-                        if (rulesData.getChannel().getId().equalsIgnoreCase(event.getChannel().getId())) {
-                            if (event.getMessageId().equalsIgnoreCase(rulesData.getMessageId())) {
-                                if (event.getReactionEmote().getName().equalsIgnoreCase(rulesData.getReactionUnicode())) {
-                                    if (rulesData.getRole() != null) {
-                                        if (!hasRole(m, rulesData.getRole())) {
-                                            event.getGuild().addRoleToMember(m, rulesData.getRole()).queue();
+                        if (data.getRulesChannel().getId().equalsIgnoreCase(event.getChannel().getId())) {
+                            if (event.getMessageId().equalsIgnoreCase(data.getRules_messageId())) {
+                                if (event.getReactionEmote().getName().equalsIgnoreCase(data.getRules_reactionUnicode())) {
+                                    if (data.getRulesRole() != null) {
+                                        if (!hasRole(m, data.getRulesRole())) {
+                                            event.getGuild().addRoleToMember(m, data.getRulesRole()).queue();
                                         }
                                         event.getReaction().removeReaction(m.getUser()).queue();
                                     }
@@ -62,9 +60,10 @@ public class ReactionAddListener extends ListenerAdapter {
     public boolean hasRole(Member member, Role role) {
         List<Role> roles = member.getRoles();
         for (Role r : roles) {
-            if (r.getId().equalsIgnoreCase(role.getId())) {
-                return true;
+            if (!r.getId().equalsIgnoreCase(role.getId())) {
+                continue;
             }
+            return true;
         }
         return false;
     }

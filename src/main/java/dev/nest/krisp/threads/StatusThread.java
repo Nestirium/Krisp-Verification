@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class StatusThread {
 
-    private static ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
+    private static final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
     public static void run() {
         service.scheduleAtFixedRate(() -> {

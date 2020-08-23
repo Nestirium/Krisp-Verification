@@ -1,7 +1,7 @@
 package dev.nest.krisp.cmds;
 
 import dev.nest.krisp.Krisp;
-import dev.nest.krisp.objects.GenericData;
+import dev.nest.krisp.objects.DataStorage;
 import dev.nest.krisp.utils.Utils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -14,7 +14,7 @@ public class InfoCmd extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
-        GenericData data = Krisp.getGenericDataManager().getData(event.getGuild().getId());
+        DataStorage data = Krisp.getDataManager().getData(event.getGuild().getId());
         if (Utils.isPrefix(event.getGuild().getId(), message)) {
             String s = Utils.stripPrefix(event.getGuild().getId(), message);
             String[] args = s.split(" ");
