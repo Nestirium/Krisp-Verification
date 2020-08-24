@@ -1,9 +1,13 @@
 package dev.nest.krisp.utils;
 
 import dev.nest.krisp.Krisp;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 public class Utils {
 
@@ -27,10 +31,6 @@ public class Utils {
         }
     }
 
-    public static String stripPrefix(String guildId, String input) {
-        return input.replaceFirst(Krisp.getDataManager().getData(guildId).getPrefix(), "");
-    }
-
     public static String checkReactionLength(String reaction) {
         if (reaction.length() > 1) {
             return reaction.replaceAll(reaction.substring(1), "");
@@ -46,8 +46,15 @@ public class Utils {
         }
     }
 
-    public static boolean exceedsMaxEmbedLength(String input) {
-        return input.length() > 1024;
+    public static boolean hasRole(Member member, Role role) {
+        List<Role> roles = member.getRoles();
+        for (Role r : roles) {
+            if (!r.getId().equalsIgnoreCase(role.getId())) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 
 }

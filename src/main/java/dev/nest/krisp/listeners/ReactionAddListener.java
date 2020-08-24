@@ -2,13 +2,11 @@ package dev.nest.krisp.listeners;
 
 import dev.nest.krisp.Krisp;
 import dev.nest.krisp.objects.DataStorage;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
+import dev.nest.krisp.utils.Utils;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 
 public class ReactionAddListener extends ListenerAdapter {
 
@@ -22,9 +20,20 @@ public class ReactionAddListener extends ListenerAdapter {
                         if (data.getVerifChannel().getId().equalsIgnoreCase(event.getChannel().getId())) {
                             if (event.getMessageId().equalsIgnoreCase(data.getVerif_messageId())) {
                                 if (event.getReactionEmote().getName().equalsIgnoreCase(data.getVerif_reactionUnicode())) {
+                                    if (data.getRulesRole() != null) {
+                                        if (Utils.hasRole(m, data.getRulesRole())) {
+                                            event.getReaction().removeReaction(m.getUser()).queue();
+                                            return;
+                                        }
+                                    }
                                     if (data.getVerifRole() != null) {
-                                        if (!hasRole(m, data.getVerifRole())) {
+                                        if (!Utils.hasRole(m, data.getVerifRole())) {
                                             event.getGuild().addRoleToMember(m, data.getVerifRole()).queue();
+                                            if (data.hasVerifRemovableRole()) {
+                                                if (Utils.hasRole(m, data.getVerifRoleToBeRemoved())) {
+                                                    event.getGuild().removeRoleFromMember(m, data.getVerifRoleToBeRemoved()).queue();
+                                                }
+                                            }
                                         }
                                         event.getReaction().removeReaction(m.getUser()).queue();
                                     }
@@ -43,8 +52,13 @@ public class ReactionAddListener extends ListenerAdapter {
                             if (event.getMessageId().equalsIgnoreCase(data.getRules_messageId())) {
                                 if (event.getReactionEmote().getName().equalsIgnoreCase(data.getRules_reactionUnicode())) {
                                     if (data.getRulesRole() != null) {
-                                        if (!hasRole(m, data.getRulesRole())) {
+                                        if (!Utils.hasRole(m, data.getRulesRole())) {
                                             event.getGuild().addRoleToMember(m, data.getRulesRole()).queue();
+                                            if (data.hasRulesRemovableRole()) {
+                                                if (Utils.hasRole(m, data.getRulesRoleToBeRemoved())) {
+                                                    event.getGuild().removeRoleFromMember(m, data.getRulesRoleToBeRemoved()).queue();
+                                                }
+                                            }
                                         }
                                         event.getReaction().removeReaction(m.getUser()).queue();
                                     }
@@ -56,18 +70,5 @@ public class ReactionAddListener extends ListenerAdapter {
             }
         }
     }
-
-    public boolean hasRole(Member member, Role role) {
-        List<Role> roles = member.getRoles();
-        for (Role r : roles) {
-            if (!r.getId().equalsIgnoreCase(role.getId())) {
-                continue;
-            }
-            return true;
-        }
-        return false;
-    }
-
-
 
 }

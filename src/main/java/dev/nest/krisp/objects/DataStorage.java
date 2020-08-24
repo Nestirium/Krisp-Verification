@@ -13,15 +13,17 @@ public class DataStorage {
 
     private final String guildId;
     private String prefix;
+    private String restrictedChannelId;
+    private String minimumRoleId;
     private String verif_channelId;
     private String verif_reactionUnicode;
-    private String verif_roleId;
+    private String verif_roleId, verif_roleToBeRemoved;
     private String verif_messageId;
     private String verif_imageURL;
     private String verif_message;
     private String rules_channelId;
     private String rules_reactionUnicode;
-    private String rules_roleId;
+    private String rules_roleId, rules_roleToBeRemoved;
     private String rules_messageId;
     private String rules_imageURL;
     private String rules_message;
@@ -30,9 +32,12 @@ public class DataStorage {
         this.guildId = guildId;
         this.prefix = prefix;
         isVerifEnabled = false;
+        restrictedChannelId = null;
+        minimumRoleId = null;
         verif_channelId = null;
         verif_reactionUnicode = null;
         verif_roleId = null;
+        verif_roleToBeRemoved = null;
         verif_messageId = null;
         verif_imageURL = null;
         verif_message = null;
@@ -40,14 +45,97 @@ public class DataStorage {
         rules_channelId = null;
         rules_reactionUnicode = null;
         rules_roleId = null;
+        rules_roleToBeRemoved = null;
         rules_messageId = null;
         rules_imageURL = null;
         rules_message = null;
         Krisp.getDataManager().putData(guildId, this);
     }
 
+    public TextChannel getRestrictedChannel() {
+        if (restrictedChannelId!= null) {
+            if (!restrictedChannelId.equalsIgnoreCase("null")) {
+                return Krisp.getJDA().getTextChannelById(restrictedChannelId);
+            }
+        }
+        return null;
+    }
+
+    public Role getMinimumRole() {
+        if (minimumRoleId!= null) {
+            if (!minimumRoleId.equalsIgnoreCase("null")) {
+                return Krisp.getJDA().getRoleById(minimumRoleId);
+            }
+        }
+        return null;
+    }
+
+    public boolean hasMinimumRole() {
+        return minimumRoleId != null && !minimumRoleId.equalsIgnoreCase("null");
+    }
+
+    public boolean hasRestrictedChannel() {
+        return restrictedChannelId != null && !restrictedChannelId.equalsIgnoreCase("null");
+    }
+
+    public void setRestrictedChannelId(String restrictedChannelId) {
+        this.restrictedChannelId = restrictedChannelId;
+        Krisp.getHandler().saveData(guildId);
+    }
+
+    public void setMinimumRoleId(String minimumRoleId) {
+        this.minimumRoleId = minimumRoleId;
+        Krisp.getHandler().saveData(guildId);
+    }
+
+    public String getRestrictedChannelId() {
+        return restrictedChannelId;
+    }
+
+    public String getMinimumRoleId() {
+        return minimumRoleId;
+    }
+
+    public String getVerif_roleToBeRemoved() {
+        return verif_roleToBeRemoved;
+    }
+
+    public String getRules_roleToBeRemoved() {
+        return rules_roleToBeRemoved;
+
+    }
+
+    public Role getVerifRoleToBeRemoved() {
+        if (verif_roleToBeRemoved != null) {
+            if (!verif_roleToBeRemoved.equalsIgnoreCase("null")) {
+                return Krisp.getJDA().getRoleById(verif_roleToBeRemoved);
+            }
+        }
+        return null;
+    }
+
+    public Role getRulesRoleToBeRemoved() {
+        if (rules_roleToBeRemoved != null) {
+            if (!rules_roleToBeRemoved.equalsIgnoreCase("null")) {
+                return Krisp.getJDA().getRoleById(rules_roleToBeRemoved);
+            }
+        }
+        return null;
+    }
+
+    public void setVerif_roleToBeRemoved(String verif_roleToBeRemoved) {
+        this.verif_roleToBeRemoved = verif_roleToBeRemoved;
+        Krisp.getHandler().saveData(guildId);
+    }
+
+    public void setRules_roleToBeRemoved(String rules_roleToBeRemoved) {
+        this.rules_roleToBeRemoved = rules_roleToBeRemoved;
+        Krisp.getHandler().saveData(guildId);
+    }
+
     public void setPrefix(String prefix) {
         this.prefix = prefix;
+        Krisp.getHandler().saveData(guildId);
     }
 
     public String getPrefix() {
@@ -92,13 +180,9 @@ public class DataStorage {
         }
     }
 
-    public void setVerif_message(String verif_message) throws IllegalArgumentException {
-        if (!Utils.exceedsMaxEmbedLength(verif_message)) {
-            this.verif_message = verif_message;
-            Krisp.getHandler().saveData(guildId);
-        } else {
-            throw new IllegalArgumentException("Max embed length must be 1024 characters!");
-        }
+    public void setVerif_message(String verif_message) {
+        this.verif_message = verif_message;
+        Krisp.getHandler().saveData(guildId);
     }
 
     public boolean getVerifEnabled() {
@@ -192,13 +276,17 @@ public class DataStorage {
         }
     }
 
-    public void setRules_message(String rules_message) throws IllegalArgumentException {
-        if (!Utils.exceedsMaxEmbedLength(verif_message)) {
-            this.rules_message = rules_message;
-            Krisp.getHandler().saveData(guildId);
-        } else {
-            throw new IllegalArgumentException("Max embed length must be 1024 characters!");
-        }
+    public void setRules_message(String rules_message) {
+        this.rules_message = rules_message;
+        Krisp.getHandler().saveData(guildId);
+    }
+
+    public boolean hasVerifRemovableRole() {
+        return verif_roleToBeRemoved != null && !verif_roleToBeRemoved.equalsIgnoreCase("null");
+    }
+
+    public boolean hasRulesRemovableRole() {
+        return rules_roleToBeRemoved != null && !rules_roleToBeRemoved.equalsIgnoreCase("null");
     }
 
     public boolean getRulesEnabled() {
@@ -245,15 +333,24 @@ public class DataStorage {
             }
         }
         return null;
-
     }
 
     public Role getVerifRole() {
-        return Krisp.getJDA().getRoleById(verif_roleId);
+        if (verif_roleId != null) {
+            if (!verif_roleId.equalsIgnoreCase("null")) {
+                return Krisp.getJDA().getRoleById(verif_roleId);
+            }
+        }
+        return null;
     }
 
     public Role getRulesRole() {
-        return Krisp.getJDA().getRoleById(rules_roleId);
+        if (rules_roleId != null) {
+            if (!rules_roleId.equalsIgnoreCase("null")) {
+                return Krisp.getJDA().getRoleById(rules_roleId);
+            }
+        }
+        return null;
     }
 
     public boolean isVerifComplete() {
@@ -268,6 +365,10 @@ public class DataStorage {
     public String toString() {
         return prefix +
                 " " +
+                restrictedChannelId +
+                " " +
+                minimumRoleId +
+                " " +
                 isVerifEnabled +
                 " " +
                 verif_channelId +
@@ -275,6 +376,8 @@ public class DataStorage {
                 verif_reactionUnicode +
                 " " +
                 verif_roleId +
+                " " +
+                verif_roleToBeRemoved +
                 " " +
                 verif_messageId +
                 " " +
@@ -287,6 +390,8 @@ public class DataStorage {
                 rules_reactionUnicode +
                 " " +
                 rules_roleId +
+                " " +
+                rules_roleToBeRemoved +
                 " " +
                 rules_messageId +
                 " " +

@@ -6,6 +6,7 @@ import dev.nest.krisp.listeners.GuildJoinListener;
 import dev.nest.krisp.listeners.GuildLeaveListener;
 import dev.nest.krisp.listeners.ReactionAddListener;
 import dev.nest.krisp.objects.*;
+import dev.nest.krisp.threads.DataMemMismatchHandler;
 import dev.nest.krisp.threads.StatusThread;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -26,9 +27,6 @@ public class Krisp {
             configData = new DBConfigData("loremipsum", "loremipsum", "loremipsum", "loremipsum", 3306, "null");
             fileManager = new FileManager(configData);
             jda = JDABuilder.createDefault(configData.getToken()).build();
-            DataSource dataSource = new DataSource(configData);
-            dataManager = new DataManager();
-            handler = new ConnectionHandler(new HikariDataSource(dataSource.getHikariConfig()));
             jda.addEventListener(new InfoCmd());
             jda.addEventListener(new HelpCmd());
             jda.addEventListener(new VerifyCmd());
@@ -37,9 +35,12 @@ public class Krisp {
             jda.addEventListener(new GuildJoinListener());
             jda.addEventListener(new GuildLeaveListener());
             jda.addEventListener(new RulesCmd());
-            jda.awaitReady();
+            DataSource dataSource = new DataSource(configData);
+            dataManager = new DataManager();
+            handler = new ConnectionHandler(new HikariDataSource(dataSource.getHikariConfig()));
             StatusThread.run();
-        } catch (LoginException | InterruptedException exception) {
+            DataMemMismatchHandler.run();
+        } catch (LoginException exception) {
             exception.printStackTrace();
             System.exit(-1);
         }
