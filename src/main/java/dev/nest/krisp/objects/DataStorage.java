@@ -13,8 +13,6 @@ public class DataStorage {
 
     private final String guildId;
     private String prefix;
-    private String restrictedChannelId;
-    private String minimumRoleId;
     private String verif_channelId;
     private String verif_reactionUnicode;
     private String verif_roleId, verif_roleToBeRemoved;
@@ -32,8 +30,6 @@ public class DataStorage {
         this.guildId = guildId;
         this.prefix = prefix;
         isVerifEnabled = false;
-        restrictedChannelId = null;
-        minimumRoleId = null;
         verif_channelId = null;
         verif_reactionUnicode = null;
         verif_roleId = null;
@@ -50,50 +46,6 @@ public class DataStorage {
         rules_imageURL = null;
         rules_message = null;
         Krisp.getDataManager().putData(guildId, this);
-    }
-
-    public TextChannel getRestrictedChannel() {
-        if (restrictedChannelId!= null) {
-            if (!restrictedChannelId.equalsIgnoreCase("null")) {
-                return Krisp.getJDA().getTextChannelById(restrictedChannelId);
-            }
-        }
-        return null;
-    }
-
-    public Role getMinimumRole() {
-        if (minimumRoleId!= null) {
-            if (!minimumRoleId.equalsIgnoreCase("null")) {
-                return Krisp.getJDA().getRoleById(minimumRoleId);
-            }
-        }
-        return null;
-    }
-
-    public boolean hasMinimumRole() {
-        return minimumRoleId != null && !minimumRoleId.equalsIgnoreCase("null");
-    }
-
-    public boolean hasRestrictedChannel() {
-        return restrictedChannelId != null && !restrictedChannelId.equalsIgnoreCase("null");
-    }
-
-    public void setRestrictedChannelId(String restrictedChannelId) {
-        this.restrictedChannelId = restrictedChannelId;
-        Krisp.getHandler().saveData(guildId);
-    }
-
-    public void setMinimumRoleId(String minimumRoleId) {
-        this.minimumRoleId = minimumRoleId;
-        Krisp.getHandler().saveData(guildId);
-    }
-
-    public String getRestrictedChannelId() {
-        return restrictedChannelId;
-    }
-
-    public String getMinimumRoleId() {
-        return minimumRoleId;
     }
 
     public String getVerif_roleToBeRemoved() {
@@ -364,10 +316,6 @@ public class DataStorage {
     @Override
     public String toString() {
         return prefix +
-                " " +
-                restrictedChannelId +
-                " " +
-                minimumRoleId +
                 " " +
                 isVerifEnabled +
                 " " +

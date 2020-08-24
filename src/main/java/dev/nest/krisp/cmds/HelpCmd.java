@@ -19,8 +19,8 @@ public class HelpCmd extends ListenerAdapter {
         if (Utils.isPrefix(event.getGuild().getId(), message)) {
            try {
                EmbedBuilder builder = new EmbedBuilder();
-               String[] args = message.split(data.getPrefix() + " ");
-               if (args[0].equalsIgnoreCase("help")) {
+               String[] args = message.split(" ");
+               if (args[0].equalsIgnoreCase(data.getPrefix() + "help")) {
                    if (args.length == 1) {
                        builder.setTitle("Commands");
                        builder.setDescription("List of all the available commands.");

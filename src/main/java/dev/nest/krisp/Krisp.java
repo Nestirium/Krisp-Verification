@@ -6,7 +6,6 @@ import dev.nest.krisp.listeners.GuildJoinListener;
 import dev.nest.krisp.listeners.GuildLeaveListener;
 import dev.nest.krisp.listeners.ReactionAddListener;
 import dev.nest.krisp.objects.*;
-import dev.nest.krisp.threads.DataMemMismatchHandler;
 import dev.nest.krisp.threads.StatusThread;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -39,7 +38,6 @@ public class Krisp {
             dataManager = new DataManager();
             handler = new ConnectionHandler(new HikariDataSource(dataSource.getHikariConfig()));
             StatusThread.run();
-            DataMemMismatchHandler.run();
         } catch (LoginException exception) {
             exception.printStackTrace();
             System.exit(-1);
